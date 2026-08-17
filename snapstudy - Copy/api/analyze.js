@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       ok: false,
@@ -107,8 +106,12 @@ ${transcript}
 
       return res.status(response.status).json({
         ok: false,
-        error: data?.error?.message || "OpenAI API error.",
-        code: data?.error?.code || null
+        error:
+          data?.error?.message ||
+          "OpenAI API error.",
+        code:
+          data?.error?.code ||
+          null
       });
     }
 
@@ -131,7 +134,9 @@ ${transcript}
 
     return res.status(500).json({
       ok: false,
-      error: error?.message || "SnapGPT could not analyze the content."
+      error:
+        error?.message ||
+        "SnapGPT could not analyze the content."
     });
   }
 }
