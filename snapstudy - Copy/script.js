@@ -1,5 +1,3 @@
-// SnapGPT - YouTube Video Analyzer
-
 async function processVideo() {
     const urlInput = document.getElementById("videoUrl");
     const summarizeBtn = document.getElementById("summarizeBtn");
@@ -8,96 +6,91 @@ async function processVideo() {
     const errorMessage = document.getElementById("errorMessage");
 
     if (!urlInput || !summarizeBtn || !resultArea || !summaryContent || !errorMessage) {
-        console.error("SnapGPT: Required HTML elements were not found.");
+        console.error("SnapGPT: Required elements are missing.");
         return;
     }
 
     const btnText = summarizeBtn.querySelector(".btn-text");
     const loader = summarizeBtn.querySelector(".loader");
 
+    const videoUrl = urlInput.value.trim();
+
     resultArea.classList.add("hidden");
     errorMessage.classList.add("hidden");
     summaryContent.innerHTML = "";
-
-    const videoUrl = urlInput.value.trim();
 
     if (!videoUrl) {
         showError("من فضلك، الصق رابط فيديو يوتيوب أولاً.");
         return;
     }
 
-    let youtubeUrl;
-
     try {
-        youtubeUrl = new URL(videoUrl);
+        new URL(videoUrl);
     } catch {
-        showError("الرابط غير صحيح. تأكد أنك وضعت رابط YouTube صحيح.");
-        return;
-    }
-
-    const isYouTube =
-        youtubeUrl.hostname === "youtube.com" ||
-        youtubeUrl.hostname === "www.youtube.com" ||
-        youtubeUrl.hostname === "m.youtube.com" ||
-        youtubeUrl.hostname === "youtu.be" ||
-        youtubeUrl.hostname === "www.youtu.be";
-
-    if (!isYouTube) {
-        showError("من فضلك استخدم رابط YouTube فقط.");
+        showError("رابط YouTube غير صحيح.");
         return;
     }
 
     summarizeBtn.disabled = true;
 
-    if (btnText) {
-        btnText.style.opacity = "0";
-    }
-
-    if (loader) {
-        loader.classList.remove("hidden");
-    }
+    if (btnText) btnText.style.opacity = "0";
+    if (loader) loader.classList.remove("hidden");
 
     try {
-        const response = await fetch("/api/analyze", {
+        // 1. Get YouTube transcript
+        const transcriptResponse = await fetch("/api/transcript", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                url: videoUrl,
+                url: videoUrl
+            })
+        });
+
+        const transcriptData = await transcriptResponse.json();
+
+        if (!transcriptResponse.ok || !transcriptData.ok) {
+            throw new Error(
+                transcriptData.error ||
+                "Could not get the video transcript."
+            );
+        }
+
+        const transcript = transcriptData.transcript;
+
+        if (!transcript) {
+            throw new Error("No transcript was found for this video.");
+        }
+
+        // 2. Send transcript to AI
+        const analyzeResponse = await fetch("/api/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                transcript: transcript,
                 mode: "summary"
             })
         });
 
-        let data;
+        const analyzeData = await analyzeResponse.json();
 
-        try {
-            data = await response.json();
-        } catch {
-            throw new Error("السيرفر رجّع استجابة غير مفهومة.");
-        }
-
-        if (!response.ok) {
+        if (!analyzeResponse.ok || !analyzeData.ok) {
             throw new Error(
-                data?.error ||
-                `حدث خطأ من السيرفر (${response.status}).`
+                analyzeData.error ||
+                "The AI could not analyze the transcript."
             );
         }
 
-        if (!data?.ok) {
-            throw new Error(
-                data?.error ||
-                "السيرفر لم يستطع تحليل الفيديو."
-            );
+        const result = analyzeData.result || analyzeData.summary;
+
+        if (!result) {
+            throw new Error("The AI returned no summary.");
         }
 
-        const finalSummary = data.result || data.summary;
-
-        if (!finalSummary) {
-            throw new Error("لم يتم إرجاع ملخص من الذكاء الاصطناعي.");
-        }
-
-        summaryContent.innerHTML = formatSummary(finalSummary);
+        summaryContent.innerHTML = formatSummary(result);
         resultArea.classList.remove("hidden");
 
         resultArea.scrollIntoView({
@@ -106,23 +99,18 @@ async function processVideo() {
         });
 
     } catch (error) {
-        console.error("SnapGPT Analyze Error:", error);
+        console.error("SnapGPT Error:", error);
 
         showError(
-            error?.message ||
-            "حدث خطأ أثناء تحليل الفيديو. حاول مرة أخرى."
+            error.message ||
+            "Something went wrong. Please try again."
         );
 
     } finally {
         summarizeBtn.disabled = false;
 
-        if (btnText) {
-            btnText.style.opacity = "1";
-        }
-
-        if (loader) {
-            loader.classList.add("hidden");
-        }
+        if (btnText) btnText.style.opacity = "1";
+        if (loader) loader.classList.add("hidden");
     }
 }
 
@@ -148,15 +136,11 @@ function showError(message) {
 function copyResult() {
     const summaryContent = document.getElementById("summaryContent");
 
-    if (!summaryContent) {
-        return;
-    }
+    if (!summaryContent) return;
 
     const text = summaryContent.innerText.trim();
 
-    if (!text) {
-        return;
-    }
+    if (!text) return;
 
     navigator.clipboard.writeText(text)
         .then(() => {
@@ -164,6 +148,7 @@ function copyResult() {
 
             if (copyBtn) {
                 const oldText = copyBtn.textContent;
+
                 copyBtn.textContent = "تم النسخ!";
 
                 setTimeout(() => {
@@ -178,9 +163,7 @@ function copyResult() {
 
 
 function formatSummary(text) {
-    if (!text) {
-        return "";
-    }
+    if (!text) return "";
 
     const escaped = String(text)
         .replace(/&/g, "&amp;")
