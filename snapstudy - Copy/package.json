@@ -1,0 +1,8 @@
+{
+  "name": "snapgpt",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "youtube-transcript-api": "^3.0.6"
+  }
+}

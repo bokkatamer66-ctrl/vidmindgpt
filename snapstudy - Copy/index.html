@@ -1,0 +1,816 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>SnapGPT — AI Video Intelligence</title>
+
+  <style>
+    :root {
+      --black: #05070a;
+      --black-soft: #0b1017;
+      --cyan: #39e7ff;
+      --cyan-soft: #8af3ff;
+      --violet: #a78bfa;
+      --white: #f7fbff;
+      --muted: #8d9aaa;
+      --border: rgba(57, 231, 255, 0.16);
+      --glass: rgba(255, 255, 255, 0.045);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(57,231,255,.08), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(167,139,250,.07), transparent 30%),
+        var(--black);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    .app {
+      width: min(1050px, 92%);
+      margin: auto;
+      padding: 45px 0 70px;
+    }
+
+    /* HEADER */
+
+    header {
+      text-align: center;
+      margin-bottom: 38px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: var(--cyan);
+      margin-bottom: 20px;
+    }
+
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 18px var(--cyan);
+    }
+
+    h1 {
+      font-size: clamp(42px, 8vw, 76px);
+      line-height: .95;
+      letter-spacing: -4px;
+      margin-bottom: 20px;
+    }
+.hero-title {
+  animation: heroIn 1s ease-out both;
+}
+
+.hero-title span {
+  display: inline-block;
+  animation: understandIn 1.2s ease-out .25s both;
+}
+
+.hero-title b {
+  color: var(--cyan);
+  font-weight: inherit;
+  text-shadow: 0 0 30px rgba(57, 231, 255, .35);
+  animation: glowMore 2s ease-in-out 1.2s infinite alternate;
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes understandIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes glowMore {
+  from {
+    text-shadow: 0 0 12px rgba(57, 231, 255, .15);
+  }
+
+  to {
+    text-shadow:
+      0 0 18px rgba(57, 231, 255, .45),
+      0 0 35px rgba(57, 231, 255, .18);
+  }
+}
+
+    h1 span {
+      color: var(--cyan);
+      text-shadow: 0 0 35px rgba(57,231,255,.25);
+    }
+
+    .subtitle {
+      max-width: 650px;
+      margin: auto;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* MAIN CARD */
+
+    .workspace {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 26px;
+      backdrop-filter: blur(25px);
+      box-shadow:
+        0 25px 80px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .input-label {
+      display: block;
+      color: var(--cyan-soft);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: .5px;
+    }
+
+    .url-box {
+      display: flex;
+      gap: 10px;
+      background: var(--black-soft);
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      padding: 8px;
+      transition: .25s;
+    }
+
+    .url-box:focus-within {
+      border-color: rgba(57,231,255,.5);
+      box-shadow: 0 0 25px rgba(57,231,255,.08);
+    }
+
+    #youtubeUrl {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--white);
+      padding: 13px;
+      font-size: 15px;
+    }
+
+    #youtubeUrl::placeholder {
+      color: #647181;
+    }
+
+    #start {
+      border: none;
+      border-radius: 12px;
+      padding: 0 22px;
+      background: var(--cyan);
+      color: #031014;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    #start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(57,231,255,.25);
+    }
+
+    /* ACTIONS */
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.025);
+      color: var(--white);
+      padding: 15px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .action:hover {
+      border-color: rgba(57,231,255,.45);
+      background: rgba(57,231,255,.06);
+      transform: translateY(-2px);
+    }
+
+    .action.violet:hover {
+      border-color: rgba(167,139,250,.45);
+      background: rgba(167,139,250,.06);
+    }
+
+    /* STATUS */
+
+    .status {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin: 22px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+    }
+
+    /* LOADING */
+
+    .loader {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      margin: 20px 0;
+    }
+
+    .loader.active {
+      display: flex;
+    }
+
+    .loader span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: bounce 1s infinite ease-in-out;
+    }
+
+    .loader span:nth-child(2) {
+      animation-delay: .15s;
+    }
+
+    .loader span:nth-child(3) {
+      animation-delay: .3s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(.5);
+        opacity: .4;
+      }
+
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* RESULT */
+
+    .result {
+      margin-top: 15px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 20px;
+      padding: 24px;
+      min-height: 180px;
+    }
+
+    .result-title {
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    #output {
+      color: #dce6ef;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-size: 15px;
+    }
+
+    /* FEATURES */
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .feature {
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 18px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .feature-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .feature h3 {
+      font-size: 15px;
+      margin-bottom: 7px;
+    }
+
+    .feature p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #53606e;
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+
+      .app {
+        padding-top: 25px;
+      }
+
+      .workspace {
+        padding: 18px;
+      }
+
+      .url-box {
+        flex-direction: column;
+      }
+
+      #start {
+        min-height: 48px;
+      }
+
+      .actions,
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <header>
+
+      <div class="logo">
+        <span class="logo-dot"></span>
+        SNAPGPT
+      </div>
+<h1 class="hero-title">
+  Study Less.<br>
+  <span>Understand <b>More.</b></span>
+</h1>
+
+
+      <p class="subtitle">
+        Paste a YouTube video and let SnapGPT turn it into
+        clear summaries, key ideas and intelligent explanations.
+      </p>
+
+    </header>
+
+
+    <section class="workspace">
+
+      <label class="input-label">
+        YOUTUBE VIDEO
+      </label>
+
+      <div class="url-box">
+
+        <input
+          id="youtubeUrl"
+          type="url"
+          placeholder="Paste YouTube link here..."
+          autocomplete="off"
+        >
+
+        <button id="start">
+          Let's Go
+        </button>
+<script>
+document.getElementById("start").addEventListener("click", async function () {
+
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        transcript: "This is a test message to check that the SnapGPT AI connection is working correctly.",
+        mode: "summary"
+      })
+    });
+
+    const result = await response.text();
+
+    alert(result);
+
+  } catch (error) {
+    alert("ERROR: " + error.message);
+  }
+
+});
+</script>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button class="action" id="upload">
+          📤 Upload
+        </button>
+
+        <button class="action" id="summarize">
+          ✦ Summarize
+        </button>
+
+        <button class="action violet" id="explain">
+          ◈ Explain
+        </button>
+
+      </div>
+
+
+      <div class="status">
+        <span class="status-dot"></span>
+        <span id="statusText">Ready for your video.</span>
+      </div>
+
+
+      <div class="loader" id="loader">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+
+      <div class="result">
+
+        <div class="result-title">
+          SnapGPT Result
+        </div>
+
+        <div id="output">
+          Your AI-generated result will appear here.
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="features">
+
+      <article class="feature">
+
+        <div class="feature-icon">⚡</div>
+
+        <h3>Fast Analysis</h3>
+
+        <p>
+          Turn long video content into useful information without
+          manually watching everything.
+        </p>
+
+      </article>
+
+
+      <article class="feature">
+
+        <div class="feature-icon">🧠</div>
+
+        <h3>Deep Understanding</h3>
+
+        <p>
+          Extract the important ideas and organize them into a
+          clear structure.
+        </p>
+
+      </article>
+
+
+      <article class="feature">
+
+        <div class="feature-icon">✨</div>
+
+        <h3>Clean Results</h3>
+
+        <p>
+          Get concise summaries and explanations designed to be
+          easy to read and understand.
+        </p>
+
+      </article>
+
+    </section>
+
+
+    <footer>
+      SnapGPT · AI Video Intelligence
+    </footer>
+
+  </main>
+
+
+  <script>
+
+    const youtubeUrl = document.getElementById("youtubeUrl");
+    const output = document.getElementById("output");
+    const statusText = document.getElementById("statusText");
+    const loader = document.getElementById("loader");
+
+
+    function showLoading(message) {
+
+      statusText.textContent = message;
+      loader.classList.add("active");
+
+    }
+
+
+    function hideLoading() {
+
+      loader.classList.remove("active");
+
+    }
+
+
+    function validYouTubeUrl(url) {
+
+      return (
+        url.includes("youtube.com/") ||
+        url.includes("youtu.be/")
+      );
+
+    }
+
+
+    // Let's Go
+
+    document.getElementById("start").addEventListener("click", () => {
+
+      const url = youtubeUrl.value.trim();
+
+      if (!url) {
+
+        statusText.textContent =
+          "Paste a YouTube link first.";
+
+        youtubeUrl.focus();
+
+        return;
+
+      }
+
+
+      if (!validYouTubeUrl(url)) {
+
+        statusText.textContent =
+          "That doesn't look like a YouTube link.";
+
+        return;
+
+      }
+
+
+      showLoading("Preparing your video...");
+
+      output.textContent =
+        "SnapGPT received your YouTube link.\n\n" +
+        "The AI processing engine will be connected next.";
+
+      setTimeout(() => {
+
+        hideLoading();
+
+        statusText.textContent =
+          "Video ready for AI analysis.";
+
+      }, 1200);
+
+    });
+
+
+    // Summarize
+document.getElementById("start").addEventListener("click", async () => {
+
+  const url = document.getElementById("youtubeUrl").value.trim();
+
+  if (!url) {
+    document.getElementById("statusText").textContent =
+      "Paste a YouTube link first.";
+    return;
+  }
+
+  document.getElementById("statusText").textContent =
+    "Connecting to SnapGPT AI...";
+
+  document.getElementById("output").textContent =
+    "Analyzing...";
+
+  try {
+
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        transcript: `
+User provided this YouTube video:
+
+${url}
+
+The actual YouTube transcript will be connected in the next step.
+For now, confirm that the SnapGPT AI connection is working.
+        `,
+        mode: "summary"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "AI request failed.");
+    }
+
+    document.getElementById("output").textContent = data.result;
+
+    document.getElementById("statusText").textContent =
+      "AI connection is working!";
+
+  } catch (error) {
+
+    document.getElementById("output").textContent =
+      "Something went wrong while connecting to the AI.";
+
+    document.getElementById("statusText").textContent =
+      "AI connection failed.";
+
+    console.error(error);
+  }
+
+});
+
+    document.getElementById("output").textContent = data.result;
+    document.getElementById("statusText").textContent =
+      "AI connection is working!";
+
+  } catch (error) {
+    document.getElementById("output").textContent =
+      "Something went wrong while connecting to the AI.";
+
+    document.getElementById("statusText").textContent =
+      "AI connection failed.";
+
+    console.error(error);
+  }
+});
+
+
+
+
+      showLoading("Building your summary...");
+
+      output.textContent =
+        "📝 SUMMARY\n\n" +
+        "AI summary will appear here once the SnapGPT AI engine is connected.";
+
+      setTimeout(() => {
+
+        hideLoading();
+
+        statusText.textContent =
+          "Ready for AI processing.";
+
+      }, 1200);
+
+    });
+
+
+    // Explain
+
+    document.getElementById("explain").addEventListener("click", () => {
+
+      const url = youtubeUrl.value.trim();
+
+      if (!url) {
+
+        statusText.textContent =
+          "Paste a YouTube link first.";
+
+        return;
+
+      }
+
+
+      showLoading("Understanding the video...");
+
+      output.textContent =
+        "💡 EXPLANATION\n\n" +
+        "A detailed AI explanation will appear here once the SnapGPT AI engine is connected.";
+
+      setTimeout(() => {
+
+        hideLoading();
+
+        statusText.textContent =
+          "Ready for AI processing.";
+
+      }, 1200);
+
+    });
+
+
+    // Upload
+
+    document.getElementById("upload").addEventListener("click", () => {
+
+      output.textContent =
+        "📤 Upload mode is ready.\n\n" +
+        "The next version will support uploaded transcripts and files.";
+
+      statusText.textContent =
+        "Upload system ready.";
+
+    });
+
+  </script>
+
+</body>
+</html>
+```
