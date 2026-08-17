@@ -5,7 +5,7 @@ function getVideoId(url) {
     const parsed = new URL(url);
 
     if (parsed.hostname === "youtu.be") {
-      return parsed.pathname.replace("/", "").trim();
+      return parsed.pathname.slice(1).split("/")[0];
     }
 
     if (
@@ -13,15 +13,15 @@ function getVideoId(url) {
       parsed.hostname === "www.youtube.com" ||
       parsed.hostname === "m.youtube.com"
     ) {
+      if (parsed.pathname.startsWith("/shorts/")) {
+        return parsed.pathname.split("/")[2];
+      }
+
+      if (parsed.pathname.startsWith("/embed/")) {
+        return parsed.pathname.split("/")[2];
+      }
+
       return parsed.searchParams.get("v");
-    }
-
-    if (parsed.hostname === "www.youtube.com" && parsed.pathname.startsWith("/shorts/")) {
-      return parsed.pathname.split("/")[2];
-    }
-
-    if (parsed.hostname === "www.youtube.com" && parsed.pathname.startsWith("/embed/")) {
-      return parsed.pathname.split("/")[2];
     }
 
     return null;
@@ -61,22 +61,22 @@ export default async function handler(req, res) {
 
     await client.ready;
 
-    const transcript = await client.getTranscript(videoId);
+    const data = await client.getTranscript(videoId);
 
-    if (!transcript || !transcript.length) {
+    if (!data?.tracks?.length) {
       return res.status(404).json({
         ok: false,
         error: "No transcript is available for this video."
       });
     }
 
-    const text = transcript
-      .map(item => item.text)
+    const transcript = data.tracks[0].transcript
+      .map(segment => segment.text)
       .join(" ")
       .replace(/\s+/g, " ")
       .trim();
 
-    if (!text || text.length < 20) {
+    if (transcript.length < 20) {
       return res.status(404).json({
         ok: false,
         error: "The transcript is empty or too short."
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       videoId,
-      transcript: text
+      transcript
     });
 
   } catch (error) {
@@ -94,9 +94,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       ok: false,
-      error:
-        error?.message ||
-        "Could not retrieve the YouTube transcript."
+      error: error?.message || "Could not retrieve the transcript."
     });
   }
 }
