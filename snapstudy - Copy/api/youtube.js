@@ -1,6 +1,4 @@
-
-import { TranscriptClient } from "youtube-transcript-api";
-
+import TranscriptClient from "youtube-transcript-api";
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -35,12 +33,11 @@ export default async function handler(req, res) {
     const client = new TranscriptClient();
 
     await client.ready;
+const transcript = await client.getTranscript(videoId);
 
-    const transcript = await client.getTranscript(videoId);
-
-    const text = transcript.transcript
-      .map(item => item.text)
-      .join(" ");
+const text = transcript
+  .map(item => item.text)
+  .join(" ");
 
     if (!text.trim()) {
       return res.status(404).json({
