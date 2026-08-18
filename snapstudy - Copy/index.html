@@ -436,39 +436,47 @@ function getYouTubeUrl() {
 
   return url;
 }
-
 async function requestTranscript(url) {
 
- const response = await fetch("/api/transcript", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        url: url
-    })
-});
+    const response = await fetch("/api/transcript", {
+        method: "POST",
 
-const data = await response.json().catch(() => null);
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
 
-if (!response.ok || !data || !data.ok) {
-    throw new Error(
-        data?.error ||
-        data?.message ||
-        "Could not retrieve the video transcript."
-    );
-}
+        body: JSON.stringify({
+            url: url
+        })
+    });
 
-const transcript =
-    data.transcript ||
-    data.text ||
-    data.data?.transcript ||
-    data.data?.text;
+    const data = await response.json().catch(() => null);
 
-if (!transcript) {
-    throw new Error(
-        "No transcript was found for this video."
-    );
+    if (!response.ok || !data || !data.ok) {
+        throw new Error(
+            data?.error ||
+            data?.message ||
+            `Transcript API failed (${response.status}).`
+        );
+    }
+
+    const transcript =
+        data.transcript ||
+        data.text ||
+        data.data?.transcript ||
+        data.data?.text;
+
+    if (
+        typeof transcript !== "string" ||
+        !transcript.trim()
+    ) {
+        throw new Error(
+            "No transcript was found for this video."
+        );
+    }
+
+    return transcript.trim();
 }
 
   if (!data.transcript) {
