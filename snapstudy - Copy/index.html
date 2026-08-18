@@ -4,31 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>SnapGPT — AI Video Intelligence</title>
 
   <style>
     :root {
-      --bg: #05070a;
-      --panel: rgba(14, 20, 29, 0.78);
-      --panel-2: rgba(10, 15, 22, 0.92);
-
+      --black: #05070a;
+      --panel: #0b1017;
       --cyan: #39e7ff;
-      --cyan-soft: #9af5ff;
       --violet: #a78bfa;
-
-      --text: #f5fbff;
-      --text-soft: #d8e4ec;
-      --muted: #8998a8;
-
-      --border: rgba(57, 231, 255, 0.16);
-      --border-hover: rgba(57, 231, 255, 0.42);
-
-      --danger: #ff6b7a;
-
-      --radius-lg: 28px;
-      --radius-md: 18px;
-      --radius-sm: 12px;
+      --white: #f7fbff;
+      --muted: #8d9aaa;
+      --border: rgba(57, 231, 255, .16);
     }
 
     * {
@@ -37,375 +23,142 @@
       padding: 0;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
       min-height: 100vh;
-      font-family: Inter, Arial, sans-serif;
-      color: var(--text);
-
+      font-family: Arial, sans-serif;
       background:
-        radial-gradient(
-          circle at 15% 10%,
-          rgba(57, 231, 255, 0.10),
-          transparent 30%
-        ),
-        radial-gradient(
-          circle at 85% 80%,
-          rgba(167, 139, 250, 0.10),
-          transparent 30%
-        ),
-        var(--bg);
-
-      overflow-x: hidden;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
+        radial-gradient(circle at 20% 10%, rgba(57,231,255,.08), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(167,139,250,.08), transparent 30%),
+        var(--black);
+      color: var(--white);
     }
 
     .app {
       width: min(1050px, 92%);
       margin: auto;
-      padding: 52px 0 70px;
+      padding: 50px 0 70px;
     }
-
-    /* =========================
-       HEADER
-    ========================= */
 
     header {
       text-align: center;
-      margin-bottom: 38px;
+      margin-bottom: 35px;
     }
 
     .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-
       color: var(--cyan);
-      font-size: 15px;
-      font-weight: 900;
+      font-weight: 800;
       letter-spacing: 4px;
-
-      margin-bottom: 22px;
-    }
-
-    .logo-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-
-      background: var(--cyan);
-
-      box-shadow:
-        0 0 10px var(--cyan),
-        0 0 25px rgba(57, 231, 255, 0.55);
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: clamp(44px, 8vw, 78px);
-      line-height: 0.95;
+      font-size: clamp(42px, 8vw, 76px);
+      line-height: .95;
       letter-spacing: -4px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     h1 span {
       color: var(--cyan);
-
-      text-shadow:
-        0 0 30px rgba(57, 231, 255, 0.25);
     }
 
     .subtitle {
-      max-width: 680px;
+      max-width: 650px;
       margin: auto;
-
       color: var(--muted);
-      font-size: 16px;
-      line-height: 1.75;
+      line-height: 1.7;
     }
 
-    /* =========================
-       MAIN WORKSPACE
-    ========================= */
-
     .workspace {
-      padding: 28px;
-
-      background: var(--panel);
-
+      background: rgba(255,255,255,.04);
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-
-      backdrop-filter: blur(25px);
-
-      box-shadow:
-        0 25px 80px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      border-radius: 28px;
+      padding: 26px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.45);
     }
 
     .input-label {
       display: block;
-
-      color: var(--cyan-soft);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 1.5px;
-
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 800;
       margin-bottom: 10px;
     }
-
-    /* =========================
-       URL INPUT
-    ========================= */
 
     .url-box {
       display: flex;
       gap: 10px;
-
-      padding: 8px;
-
-      background: var(--panel-2);
-
+      background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-
-      transition: 0.25s ease;
-    }
-
-    .url-box:focus-within {
-      border-color: var(--border-hover);
-
-      box-shadow:
-        0 0 0 3px rgba(57, 231, 255, 0.05),
-        0 0 30px rgba(57, 231, 255, 0.06);
+      border-radius: 17px;
+      padding: 8px;
     }
 
     #youtubeUrl {
       flex: 1;
       min-width: 0;
-
-      border: none;
-      outline: none;
-
+      border: 0;
+      outline: 0;
       background: transparent;
-
-      color: var(--text);
-
-      padding: 14px;
-
+      color: var(--white);
+      padding: 13px;
       font-size: 15px;
     }
 
     #youtubeUrl::placeholder {
-      color: #617080;
+      color: #647181;
     }
 
     #start {
-      border: none;
-      border-radius: var(--radius-sm);
-
-      padding: 0 24px;
-
+      border: 0;
+      border-radius: 12px;
+      padding: 0 22px;
       background: var(--cyan);
       color: #031014;
-
-      font-weight: 900;
-
-      transition: 0.2s ease;
+      font-weight: 800;
+      cursor: pointer;
     }
-
-    #start:hover {
-      transform: translateY(-2px);
-
-      box-shadow:
-        0 10px 25px rgba(57, 231, 255, 0.18);
-    }
-
-    #start:active {
-      transform: scale(0.98);
-    }
-
-    /* =========================
-       TRANSCRIPT FALLBACK
-    ========================= */
-
-    .transcript-wrap {
-      margin-top: 14px;
-    }
-
-    .transcript-toggle {
-      border: none;
-      background: transparent;
-
-      color: var(--muted);
-
-      font-size: 12px;
-      font-weight: 700;
-
-      margin-bottom: 8px;
-    }
-
-    .transcript-toggle:hover {
-      color: var(--cyan-soft);
-    }
-
-    #transcriptInput {
-      width: 100%;
-      min-height: 130px;
-
-      resize: vertical;
-
-      padding: 16px;
-
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-
-      outline: none;
-
-      background: var(--panel-2);
-
-      color: var(--text);
-
-      font-family: inherit;
-      font-size: 14px;
-      line-height: 1.7;
-
-      transition: 0.25s ease;
-    }
-
-    #transcriptInput:focus {
-      border-color: var(--border-hover);
-
-      box-shadow:
-        0 0 25px rgba(57, 231, 255, 0.05);
-    }
-
-    #transcriptInput::placeholder {
-      color: #617080;
-    }
-
-    /* =========================
-       ACTIONS
-    ========================= */
 
     .actions {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-
       gap: 12px;
-
       margin-top: 16px;
     }
 
     .action {
-      position: relative;
-
-      border: 1px solid var(--border);
-
-      border-radius: 15px;
-
-      padding: 16px;
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(57, 231, 255, 0.07),
-          rgba(255, 255, 255, 0.025)
-        );
-
-      color: var(--text);
-
-      font-weight: 900;
-
-      transition: 0.25s ease;
+      border: 1px solid rgba(57,231,255,.18);
+      background: rgba(57,231,255,.06);
+      color: var(--white);
+      padding: 15px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .2s;
     }
 
     .action:hover {
-      transform: translateY(-3px);
-
-      border-color: var(--border-hover);
-
-      box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.25),
-        0 0 20px rgba(57, 231, 255, 0.06);
-    }
-
-    .action:active {
-      transform: scale(0.98);
+      transform: translateY(-2px);
+      border-color: rgba(57,231,255,.5);
     }
 
     #explain {
-      border-color: rgba(167, 139, 250, 0.25);
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(167, 139, 250, 0.10),
-          rgba(255, 255, 255, 0.025)
-        );
+      border-color: rgba(167,139,250,.3);
+      background: rgba(167,139,250,.08);
     }
-
-    #explain:hover {
-      border-color: rgba(167, 139, 250, 0.60);
-
-      box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.25),
-        0 0 22px rgba(167, 139, 250, 0.10);
-    }
-
-    /* =========================
-       STATUS
-    ========================= */
 
     .status {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-
-      margin: 22px 0 10px;
-
+      text-align: center;
+      margin: 22px 0;
       color: var(--muted);
       font-size: 13px;
-
-      text-align: center;
     }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-
-      border-radius: 50%;
-
-      background: var(--cyan);
-
-      box-shadow:
-        0 0 12px var(--cyan);
-    }
-
-    /* =========================
-       LOADER
-    ========================= */
 
     .loader {
       display: none;
-
       justify-content: center;
-      align-items: center;
-
       gap: 7px;
-
-      margin: 18px 0;
+      margin: 20px 0;
     }
 
     .loader.active {
@@ -415,28 +168,23 @@
     .loader span {
       width: 7px;
       height: 7px;
-
       border-radius: 50%;
-
       background: var(--cyan);
-
       animation: bounce 1s infinite ease-in-out;
     }
 
     .loader span:nth-child(2) {
-      animation-delay: 0.15s;
+      animation-delay: .15s;
     }
 
     .loader span:nth-child(3) {
-      animation-delay: 0.3s;
+      animation-delay: .3s;
     }
 
     @keyframes bounce {
-      0%,
-      80%,
-      100% {
-        transform: scale(0.5);
-        opacity: 0.35;
+      0%,80%,100% {
+        transform: scale(.5);
+        opacity: .4;
       }
 
       40% {
@@ -445,229 +193,76 @@
       }
     }
 
-    /* =========================
-       RESULT
-    ========================= */
-
     .result {
       margin-top: 15px;
-
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 20px;
       padding: 24px;
-
-      min-height: 200px;
-
-      background: rgba(0, 0, 0, 0.25);
-
-      border: 1px solid rgba(255, 255, 255, 0.06);
-
-      border-radius: 22px;
-    }
-
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      gap: 15px;
-
-      margin-bottom: 18px;
+      min-height: 180px;
     }
 
     .result-title {
       color: var(--cyan);
-
       font-size: 13px;
-      font-weight: 900;
+      font-weight: 800;
+      margin-bottom: 15px;
+    }
 
-      letter-spacing: 1.5px;
+    #output {
+      color: #dce6ef;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-size: 15px;
     }
 
     .result-tools {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
     .result-tool {
-      border: 1px solid var(--border);
-
-      background: rgba(57, 231, 255, 0.05);
-
-      color: var(--text-soft);
-
+      border: 1px solid rgba(57,231,255,.18);
+      background: rgba(57,231,255,.05);
+      color: #dffaff;
       border-radius: 10px;
-
-      padding: 8px 12px;
-
-      font-size: 12px;
-      font-weight: 800;
-
-      transition: 0.2s ease;
+      padding: 8px 14px;
+      cursor: pointer;
     }
-
-    .result-tool:hover {
-      border-color: var(--border-hover);
-
-      background: rgba(57, 231, 255, 0.10);
-
-      transform: translateY(-2px);
-    }
-
-    #output {
-      color: var(--text-soft);
-
-      font-size: 15px;
-      line-height: 1.85;
-
-      word-break: break-word;
-    }
-
-    .result-section {
-      position: relative;
-      overflow: hidden;
-
-      padding: 22px;
-
-      margin-top: 14px;
-
-      border-radius: 19px;
-
-      border: 1px solid rgba(57, 231, 255, 0.17);
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(57, 231, 255, 0.07),
-          rgba(167, 139, 250, 0.055)
-        );
-    }
-
-    .result-section::before {
-      content: "";
-
-      position: absolute;
-
-      width: 120px;
-      height: 120px;
-
-      top: -65px;
-      right: -45px;
-
-      border-radius: 50%;
-
-      background: rgba(57, 231, 255, 0.10);
-
-      filter: blur(25px);
-
-      pointer-events: none;
-    }
-
-    .language-badge {
-      position: relative;
-
-      display: inline-flex;
-      align-items: center;
-
-      padding: 7px 12px;
-
-      margin-bottom: 13px;
-
-      border-radius: 999px;
-
-      background: rgba(57, 231, 255, 0.08);
-
-      border: 1px solid rgba(57, 231, 255, 0.20);
-
-      color: var(--cyan-soft);
-
-      font-size: 11px;
-      font-weight: 900;
-    }
-
-    .result-section p {
-      position: relative;
-
-      color: var(--text-soft);
-
-      line-height: 1.9;
-
-      white-space: normal;
-    }
-
-    /* =========================
-       FEATURES
-    ========================= */
 
     .features {
       display: grid;
-
       grid-template-columns: repeat(3, 1fr);
-
       gap: 14px;
-
       margin-top: 18px;
     }
 
     .feature {
-      padding: 21px;
-
-      border: 1px solid rgba(255, 255, 255, 0.06);
-
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,.06);
       border-radius: 18px;
-
-      background: rgba(255, 255, 255, 0.025);
-    }
-
-    .feature-icon {
-      font-size: 23px;
-
-      margin-bottom: 12px;
+      background: rgba(255,255,255,.025);
     }
 
     .feature h3 {
-      font-size: 15px;
-
       margin-bottom: 7px;
     }
 
     .feature p {
       color: var(--muted);
-
       font-size: 13px;
-
-      line-height: 1.65;
+      line-height: 1.6;
     }
-
-    /* =========================
-       FOOTER
-    ========================= */
 
     footer {
       text-align: center;
-
       margin-top: 30px;
-
       color: #53606e;
-
       font-size: 12px;
     }
 
-    /* =========================
-       MOBILE
-    ========================= */
-
     @media (max-width: 700px) {
-
-      .app {
-        width: 94%;
-
-        padding-top: 32px;
-      }
-
-      .workspace {
-        padding: 18px;
-      }
-
       .url-box {
         flex-direction: column;
       }
@@ -680,839 +275,370 @@
       .features {
         grid-template-columns: 1fr;
       }
-
-      .result-header {
-        align-items: flex-start;
-
-        flex-direction: column;
-      }
-
-      h1 {
-        letter-spacing: -2.5px;
-      }
     }
   </style>
 </head>
 
 <body>
 
-  <main class="app">
+<main class="app">
 
-    <!-- =========================
-         HEADER
-    ========================== -->
+  <header>
+    <div class="logo">● SNAPGPT</div>
 
-    <header>
+    <h1>
+      Study Less.<br>
+      <span>Understand More.</span>
+    </h1>
 
-      <div class="logo">
-        <span class="logo-dot"></span>
-        SNAPGPT
+    <p class="subtitle">
+      Paste a YouTube video and let SnapGPT turn it into
+      clear summaries and intelligent explanations.
+    </p>
+  </header>
+
+  <section class="workspace">
+
+    <label class="input-label">
+      YOUTUBE VIDEO
+    </label>
+
+    <div class="url-box">
+
+      <input
+        id="youtubeUrl"
+        type="url"
+        placeholder="Paste YouTube link here..."
+        autocomplete="off"
+      >
+
+      <button id="start" type="button">
+        Let's Go
+      </button>
+
+    </div>
+
+    <div class="actions">
+
+      <button class="action" id="upload" type="button">
+        📤 Upload
+      </button>
+
+      <button class="action" id="summarize" type="button">
+        ✦ Summarize
+      </button>
+
+      <button class="action" id="explain" type="button">
+        ◈ Explain
+      </button>
+
+    </div>
+
+    <div class="status">
+      <span id="statusText">
+        Ready for your video.
+      </span>
+    </div>
+
+    <div class="loader" id="loader">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <div class="result">
+
+      <div class="result-tools">
+
+        <button id="copyResult" class="result-tool">
+          📋 Copy
+        </button>
+
+        <button id="clearResult" class="result-tool">
+          🗑️ Clear
+        </button>
+
       </div>
 
-      <h1>
-        Study Less.<br>
-        <span>Understand More.</span>
-      </h1>
+      <div class="result-title">
+        SNAPGPT RESULT
+      </div>
 
-      <p class="subtitle">
-        Paste a YouTube video and let SnapGPT turn it into
-        clear summaries, key ideas and intelligent explanations.
+      <div id="output">
+        Your AI-generated result will appear here.
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="features">
+
+    <article class="feature">
+      <h3>⚡ Fast Analysis</h3>
+      <p>
+        Turn long educational videos into useful information.
       </p>
+    </article>
 
-    </header>
+    <article class="feature">
+      <h3>🧠 Deep Understanding</h3>
+      <p>
+        Extract the important ideas and organize them clearly.
+      </p>
+    </article>
 
+    <article class="feature">
+      <h3>✨ Clean Results</h3>
+      <p>
+        Get summaries and explanations that are easy to study.
+      </p>
+    </article>
 
-    <!-- =========================
-         WORKSPACE
-    ========================== -->
+  </section>
 
-    <section class="workspace">
+  <footer>
+    SnapGPT · AI Video Intelligence
+  </footer>
 
-      <label
-        class="input-label"
-        for="youtubeUrl"
-      >
-        YOUTUBE VIDEO
-      </label>
+</main>
 
+<script>
 
-      <!-- YouTube URL -->
+const youtubeUrl = document.getElementById("youtubeUrl");
+const output = document.getElementById("output");
+const statusText = document.getElementById("statusText");
+const loader = document.getElementById("loader");
 
-      <div class="url-box">
+function showLoading(message) {
+  statusText.textContent = message;
+  loader.classList.add("active");
+}
 
-        <input
-          id="youtubeUrl"
-          type="url"
-          placeholder="Paste YouTube link here..."
-          autocomplete="off"
-          spellcheck="false"
-        >
+function hideLoading() {
+  loader.classList.remove("active");
+}
 
-        <button
-          id="start"
-          type="button"
-        >
-          Let's Go
-        </button>
+function getYouTubeUrl() {
 
-      </div>
+  const url = youtubeUrl.value.trim();
 
+  if (!url) {
+    throw new Error("Please paste a YouTube link first.");
+  }
 
-      <!-- Optional transcript -->
+  const pattern =
+    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)[A-Za-z0-9_-]{11}/;
 
-      <div class="transcript-wrap">
+  if (!pattern.test(url)) {
+    throw new Error("Please enter a valid YouTube link.");
+  }
 
-        <button
-          class="transcript-toggle"
-          id="transcriptToggle"
-          type="button"
-        >
-          ▸ Have a transcript? Paste it manually
-        </button>
+  return url;
+}
 
-        <textarea
-          id="transcriptInput"
-          placeholder="Paste the video transcript here if you already have it..."
-          hidden
-        ></textarea>
+async function requestTranscript(url) {
 
-      </div>
+  const response = await fetch("/api/youtube", {
 
+    method: "POST",
 
-      <!-- Actions -->
+    headers: {
+      "Content-Type": "application/json"
+    },
 
-      <div class="actions">
+    body: JSON.stringify({
+      url: url
+    })
 
-        <button
-          class="action"
-          id="upload"
-          type="button"
-        >
-          📤 Upload
-        </button>
+  });
 
-        <button
-          class="action"
-          id="summarize"
-          type="button"
-        >
-          ✦ Summarize
-        </button>
+  const data = await response.json().catch(() => null);
 
-        <button
-          class="action"
-          id="explain"
-          type="button"
-        >
-          ◈ Explain
-        </button>
+  if (!response.ok || !data || !data.ok) {
 
-      </div>
+    throw new Error(
+      data?.error ||
+      "Could not retrieve the video transcript."
+    );
 
+  }
 
-      <!-- Status -->
+  if (!data.transcript) {
+    throw new Error("The video does not have an available transcript.");
+  }
 
-      <div class="status">
+  return data.transcript;
+}
 
-        <span class="status-dot"></span>
+async function analyzeTranscript(transcript, mode) {
 
-        <span id="statusText">
-          Ready for your video.
-        </span>
+  const response = await fetch("/api/analyze", {
 
-      </div>
+    method: "POST",
 
+    headers: {
+      "Content-Type": "application/json"
+    },
 
-      <!-- Loader -->
+    body: JSON.stringify({
+      transcript: transcript,
+      mode: mode
+    })
 
-      <div
-        class="loader"
-        id="loader"
-        aria-label="Loading"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+  });
 
+  const data = await response.json().catch(() => null);
 
-      <!-- Result -->
+  if (!response.ok || !data || !data.ok) {
 
-      <div class="result">
+    throw new Error(
+      data?.error ||
+      "AI request failed."
+    );
 
-        <div class="result-header">
+  }
 
-          <div class="result-title">
-            SNAPGPT RESULT
-          </div>
+  return data.result;
+}
 
-          <div class="result-tools">
+async function analyzeVideo(mode) {
 
-            <button
-              id="copyResult"
-              class="result-tool"
-              type="button"
-            >
-              📋 Copy
-            </button>
+  try {
 
-            <button
-              id="clearResult"
-              class="result-tool"
-              type="button"
-            >
-              🗑️ Clear
-            </button>
+    const url = getYouTubeUrl();
 
-          </div>
+    showLoading(
+      mode === "explain"
+        ? "Getting your video..."
+        : "Getting your video..."
+    );
 
-        </div>
+    output.textContent =
+      "Retrieving transcript...";
 
-        <div id="output">
-          Your AI-generated result will appear here.
-        </div>
+    const transcript =
+      await requestTranscript(url);
 
-      </div>
+    statusText.textContent =
+      mode === "explain"
+        ? "SnapGPT is explaining..."
+        : "SnapGPT is summarizing...";
 
-    </section>
+    output.textContent =
+      "AI is analyzing the transcript...";
 
+    const result =
+      await analyzeTranscript(transcript, mode);
 
-    <!-- =========================
-         FEATURES
-    ========================== -->
+    output.textContent = result;
 
-    <section class="features">
+    statusText.textContent =
+      mode === "explain"
+        ? "Explanation completed successfully!"
+        : "Summary completed successfully!";
 
-      <article class="feature">
+  } catch (error) {
 
-        <div class="feature-icon">
-          ⚡
-        </div>
+    console.error("SnapGPT Error:", error);
 
-        <h3>
-          Fast Analysis
-        </h3>
+    output.textContent =
+      "⚠️ SnapGPT Error\n\n" +
+      error.message;
 
-        <p>
-          Turn long video content into useful study information
-          without manually watching everything.
-        </p>
+    statusText.textContent =
+      "Something went wrong.";
 
-      </article>
+  } finally {
 
+    hideLoading();
 
-      <article class="feature">
+  }
 
-        <div class="feature-icon">
-          🧠
-        </div>
+}
 
-        <h3>
-          Deep Understanding
-        </h3>
+document
+  .getElementById("start")
+  .addEventListener("click", () => {
 
-        <p>
-          Extract important ideas and organize them into a
-          clear student-friendly structure.
-        </p>
+    analyzeVideo("summary");
 
-      </article>
+  });
 
+document
+  .getElementById("summarize")
+  .addEventListener("click", () => {
 
-      <article class="feature">
+    analyzeVideo("summary");
 
-        <div class="feature-icon">
-          ✨
-        </div>
+  });
 
-        <h3>
-          Clean Results
-        </h3>
+document
+  .getElementById("explain")
+  .addEventListener("click", () => {
 
-        <p>
-          Get concise summaries and explanations in both
-          Arabic and English.
-        </p>
+    analyzeVideo("explain");
 
-      </article>
+  });
 
-    </section>
+document
+  .getElementById("upload")
+  .addEventListener("click", () => {
 
+    statusText.textContent =
+      "Upload mode is coming soon.";
 
-    <footer>
-      SnapGPT · AI Video Intelligence
-    </footer>
+    output.textContent =
+      "📤 Upload mode is coming soon.";
 
-  </main>
+  });
 
+document
+  .getElementById("clearResult")
+  .addEventListener("click", () => {
 
-  <!-- =========================
-       JAVASCRIPT
-  ========================== -->
+    youtubeUrl.value = "";
 
-  <script>
+    output.textContent =
+      "Your AI-generated result will appear here.";
 
-    /* =====================================
-       ELEMENTS
-    ===================================== */
+    statusText.textContent =
+      "Ready for your next lesson.";
 
-    const youtubeUrl =
-      document.getElementById("youtubeUrl");
+  });
 
-    const transcriptInput =
-      document.getElementById("transcriptInput");
+document
+  .getElementById("copyResult")
+  .addEventListener("click", async function () {
 
-    const transcriptToggle =
-      document.getElementById("transcriptToggle");
+    const text =
+      output.textContent.trim();
 
-    const output =
-      document.getElementById("output");
+    if (!text) return;
 
-    const statusText =
-      document.getElementById("statusText");
+    try {
 
-    const loader =
-      document.getElementById("loader");
+      await navigator.clipboard.writeText(text);
 
+      this.textContent = "✅ Copied!";
 
-    /* =====================================
-       HELPERS
-    ===================================== */
+      setTimeout(() => {
+        this.textContent = "📋 Copy";
+      }, 1500);
 
-    function showLoading(message) {
+    } catch {
 
-      statusText.textContent = message;
+      this.textContent = "❌ Copy failed";
 
-      loader.classList.add("active");
+      setTimeout(() => {
+        this.textContent = "📋 Copy";
+      }, 1500);
 
     }
 
+  });
 
-    function hideLoading() {
-
-      loader.classList.remove("active");
-
-    }
-
-
-    function escapeHTML(text) {
-
-      return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-    }
-
-
-    function isValidYouTubeUrl(url) {
-
-      return /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)/i
-        .test(url);
-
-    }
-
-
-    function displayResult(text, type) {
-
-      const safeText =
-        escapeHTML(text);
-
-      const title =
-        type === "explain"
-          ? "◈ SnapGPT Explanation"
-          : "✦ SnapGPT Summary";
-
-      output.innerHTML = `
-        <div class="result-section">
-
-          <div class="language-badge">
-            ${title}
-          </div>
-
-          <p>
-            ${safeText.replace(/\n/g, "<br>")}
-          </p>
-
-        </div>
-      `;
-
-    }
-
-
-    /* =====================================
-       GET TRANSCRIPT
-    ===================================== */
-
-    async function getTranscript() {
-
-      const manualTranscript =
-        transcriptInput.value.trim();
-
-      /*
-       If the user pasted a transcript manually,
-       use it directly.
-      */
-
-      if (manualTranscript) {
-
-        return manualTranscript;
-
-      }
-
-
-      const url =
-        youtubeUrl.value.trim();
-
-
-      if (!url) {
-
-        throw new Error(
-          "Paste a YouTube link first."
-        );
-
-      }
-
-
-      if (!isValidYouTubeUrl(url)) {
-
-        throw new Error(
-          "That doesn't look like a valid YouTube link."
-        );
-
-      }
-
-
-      statusText.textContent =
-        "Getting the video transcript...";
-
-
-      /*
-       Ask our backend for the transcript.
-      */
-
-      const response =
-        await fetch(
-          "/api/youtube",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-              url: url
-            })
-          }
-        );
-
-
-      let data;
-
-      try {
-
-        data =
-          await response.json();
-
-      } catch {
-
-        throw new Error(
-          "The transcript server returned an invalid response."
-        );
-
-      }
-
-
-      if (!response.ok || !data.ok) {
-
-        throw new Error(
-          data.error ||
-          "Could not retrieve the video transcript."
-        );
-
-      }
-
-
-      if (
-        typeof data.transcript !== "string" ||
-        !data.transcript.trim()
-      ) {
-
-        throw new Error(
-          "No transcript was found for this video."
-        );
-
-      }
-
-
-      return data.transcript.trim();
-
-    }
-
-
-    /* =====================================
-       ANALYZE
-    ===================================== */
-
-    async function analyzeVideo(mode) {
-
-      try {
-
-        showLoading(
-          mode === "explain"
-            ? "Understanding your video..."
-            : "Building your summary..."
-        );
-
-
-        output.textContent =
-          "Analyzing your video...";
-
-
-        /*
-         Step 1:
-         Get transcript from YouTube
-         or manual input.
-        */
-
-        const transcript =
-          await getTranscript();
-
-
-        /*
-         Step 2:
-         Send transcript to Gemini backend.
-        */
-
-        statusText.textContent =
-          mode === "explain"
-            ? "Creating your explanation..."
-            : "Creating your summary...";
-
-
-        const response =
-          await fetch(
-            "/api/analyze",
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type": "application/json"
-              },
-
-              body: JSON.stringify({
-                transcript: transcript,
-                mode: mode
-              })
-            }
-          );
-
-
-        let data;
-
-        try {
-
-          data =
-            await response.json();
-
-        } catch {
-
-          throw new Error(
-            "The AI server returned an invalid response."
-          );
-
-        }
-
-
-        if (!response.ok || !data.ok) {
-
-          throw new Error(
-            data.error ||
-            "Gemini API request failed."
-          );
-
-        }
-
-
-        if (
-          typeof data.result !== "string" ||
-          !data.result.trim()
-        ) {
-
-          throw new Error(
-            "Gemini returned an empty response."
-          );
-
-        }
-
-
-        /*
-         Step 3:
-         Display result.
-        */
-
-        displayResult(
-          data.result.trim(),
-          mode
-        );
-
-
-        statusText.textContent =
-          mode === "explain"
-            ? "Explanation completed successfully!"
-            : "Summary completed successfully!";
-
-
-      } catch (error) {
-
-        console.error(
-          "SnapGPT error:",
-          error
-        );
-
-
-        output.innerHTML = `
-          <div class="result-section">
-
-            <div class="language-badge">
-              ⚠️ SnapGPT Error
-            </div>
-
-            <p>
-              ${escapeHTML(
-                error?.message ||
-                "Something went wrong."
-              )}
-            </p>
-
-          </div>
-        `;
-
-
-        statusText.textContent =
-          "Something went wrong.";
-
-
-      } finally {
-
-        hideLoading();
-
-      }
-
-    }
-
-
-    /* =====================================
-       LET'S GO
-    ===================================== */
-
-    document
-      .getElementById("start")
-      .addEventListener(
-        "click",
-        function () {
-
-          analyzeVideo("summary");
-
-        }
-      );
-
-
-    /* =====================================
-       SUMMARIZE
-    ===================================== */
-
-    document
-      .getElementById("summarize")
-      .addEventListener(
-        "click",
-        function () {
-
-          analyzeVideo("summary");
-
-        }
-      );
-
-
-    /* =====================================
-       EXPLAIN
-    ===================================== */
-
-    document
-      .getElementById("explain")
-      .addEventListener(
-        "click",
-        function () {
-
-          analyzeVideo("explain");
-
-        }
-      );
-
-
-    /* =====================================
-       TRANSCRIPT TOGGLE
-    ===================================== */
-
-    transcriptToggle
-      .addEventListener(
-        "click",
-        function () {
-
-          const isHidden =
-            transcriptInput.hidden;
-
-          transcriptInput.hidden =
-            !isHidden;
-
-          transcriptToggle.textContent =
-            isHidden
-              ? "▾ Hide manual transcript"
-              : "▸ Have a transcript? Paste it manually";
-
-        }
-      );
-
-
-    /* =====================================
-       UPLOAD
-    ===================================== */
-
-    document
-      .getElementById("upload")
-      .addEventListener(
-        "click",
-        function () {
-
-          statusText.textContent =
-            "Upload mode is coming soon.";
-
-          output.textContent =
-            "📤 Upload support will be added later.";
-
-        }
-      );
-
-
-    /* =====================================
-       CLEAR
-    ===================================== */
-
-    document
-      .getElementById("clearResult")
-      .addEventListener(
-        "click",
-        function () {
-
-          youtubeUrl.value = "";
-
-          transcriptInput.value = "";
-
-          output.textContent =
-            "Your AI-generated result will appear here.";
-
-          statusText.textContent =
-            "Ready for your next lesson.";
-
-          hideLoading();
-
-        }
-      );
-
-
-    /* =====================================
-       COPY
-    ===================================== */
-
-    document
-      .getElementById("copyResult")
-      .addEventListener(
-        "click",
-        async function () {
-
-          const result =
-            output.innerText.trim();
-
-
-          if (
-            !result ||
-            result ===
-            "Your AI-generated result will appear here."
-          ) {
-
-            return;
-
-          }
-
-
-          try {
-
-            await navigator.clipboard.writeText(
-              result
-            );
-
-
-            this.textContent =
-              "✅ Copied!";
-
-
-            setTimeout(
-              () => {
-
-                this.textContent =
-                  "📋 Copy";
-
-              },
-              1500
-            );
-
-
-          } catch (error) {
-
-            this.textContent =
-              "❌ Copy failed";
-
-
-            setTimeout(
-              () => {
-
-                this.textContent =
-                  "📋 Copy";
-
-              },
-              1500
-            );
-
-          }
-
-        }
-      );
-
-
-    /* =====================================
-       ENTER KEY
-    ===================================== */
-
-    youtubeUrl
-      .addEventListener(
-        "keydown",
-        function (event) {
-
-          if (
-            event.key === "Enter"
-          ) {
-
-            event.preventDefault();
-
-            analyzeVideo("summary");
-
-          }
-
-        }
-      );
-
-  </script>
+</script>
 
 </body>
 </html>
