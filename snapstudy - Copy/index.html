@@ -701,7 +701,16 @@ document.getElementById("summarize").addEventListener("click", async () => {
       );
     }
 
-    output.innerHTML = formatSnapGPTResult(data.result);
+   output.innerHTML = `
+  <div class="result-section">
+    <div class="language-badge">✨ SnapGPT Summary</div>
+    <p>${data.result
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\n/g, "<br>")}</p>
+  </div>
+`;
 
     status.textContent =
       "Summary completed successfully!";
