@@ -1,18 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
-import { YoutubeTranscript } from "youtube-transcript-api";
+import TranscriptClient from "youtube-transcript-api";
 
 export default async function handler(req, res) {
-  // Allow requests from the website
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  // Handle browser preflight request
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  // Only POST is allowed
   if (req.method !== "POST") {
     return res.status(405).json({
       ok: false,
@@ -21,64 +10,64 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Read request body
-    let body = req.body;
+    const { videoUrl, mode = "summary" } = req.body || {};
 
-    if (typeof body === "string") {
-      try {
-        body = JSON.parse(body);
-      } catch {
-        return res.status(400).json({
-          ok: false,
-          error: "Invalid request body.",
-        });
-      }
-    }
-
-    const { videoUrl, mode = "summary" } = body || {};
-
-    // Check YouTube URL
-    if (!videoUrl || typeof videoUrl !== "string") {
+    if (!videoUrl) {
       return res.status(400).json({
         ok: false,
         error: "YouTube video URL is required.",
       });
     }
 
-    // Check Gemini API key
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
         ok: false,
-        error: "GEMINI_API_KEY is not configured on Vercel.",
+        error: "GEMINI_API_KEY is missing on Vercel.",
       });
     }
 
-    // Get YouTube transcript
-    let transcript;
+    // Extract YouTube video ID
+    let videoId = "";
 
     try {
-      transcript = await YoutubeTranscript.fetchTranscript(videoUrl);
-    } catch (error) {
-      console.error("Transcript Error:", error);
+      const url = new URL(videoUrl);
 
+      if (url.hostname.includes("youtu.be")) {
+        videoId = url.pathname.substring(1);
+      } else if (url.hostname.includes("youtube.com")) {
+        videoId = url.searchParams.get("v") || "";
+      }
+    } catch {
       return res.status(400).json({
         ok: false,
-        error:
-          "Could not get the transcript for this YouTube video. Make sure captions are available.",
+        error: "Invalid YouTube URL.",
       });
     }
 
-    if (!Array.isArray(transcript) || transcript.length === 0) {
+    if (!videoId) {
+      return res.status(400).json({
+        ok: false,
+        error: "Could not find the YouTube video ID.",
+      });
+    }
+
+    // Get transcript
+    const client = new TranscriptClient();
+
+    await client.ready;
+
+    const transcript = await client.getTranscript(videoId);
+
+    if (!transcript || !transcript.transcript) {
       return res.status(400).json({
         ok: false,
         error: "No transcript was found for this video.",
       });
     }
 
-    // Convert transcript to plain text
-    const transcriptText = transcript
+    const transcriptText = transcript.transcript
       .map((item) => item.text || "")
       .join(" ")
       .replace(/\s+/g, " ")
@@ -87,56 +76,58 @@ export default async function handler(req, res) {
     if (!transcriptText) {
       return res.status(400).json({
         ok: false,
-        error: "The video transcript is empty.",
+        error: "The transcript is empty.",
       });
     }
 
-    // Create Gemini client
+    // Gemini
     const ai = new GoogleGenAI({
-      apiKey,
+      apiKey: apiKey,
     });
 
-    // Choose the task
-    let instruction;
+    let prompt;
 
     if (mode === "explain") {
-      instruction = `
-اشرح محتوى الفيديو التالي للطالب بطريقة بسيطة وواضحة باللغة العربية.
+      prompt = `
+أنت مساعد تعليمي في موقع SnapGPT.
 
-قسّم الشرح إلى:
-1. الفكرة الرئيسية
-2. أهم الأفكار
-3. شرح النقاط المهمة
-4. أمثلة بسيطة إذا كانت مناسبة
-5. خلاصة قصيرة في النهاية
+اشرح محتوى الفيديو التالي للطالب باللغة العربية بطريقة بسيطة ومنظمة.
 
-لا تضف معلومات غير موجودة في النص إلا إذا كانت ضرورية جدًا لفهم الفكرة.
+استخدم:
+- الفكرة الرئيسية
+- أهم النقاط
+- شرح مبسط
+- أمثلة عند الحاجة
+- خلاصة قصيرة
+
+لا تضف معلومات غير موجودة في النص.
 
 نص الفيديو:
 ${transcriptText}
 `;
     } else {
-      instruction = `
-لخّص محتوى الفيديو التالي باللغة العربية بطريقة مناسبة للطلاب.
+      prompt = `
+أنت مساعد تعليمي في موقع SnapGPT.
 
-اجعل الناتج منظمًا وسهل المذاكرة، ويحتوي على:
-1. عنوان مناسب
-2. ملخص قصير
-3. أهم النقاط في شكل نقاط واضحة
-4. أهم المصطلحات أو المعلومات التي يجب تذكرها
-5. خلاصة نهائية
+لخص محتوى الفيديو التالي باللغة العربية بطريقة مناسبة للطلاب والمذاكرة.
 
-حافظ على المعلومات المهمة ولا تكرر الكلام.
+اكتب:
+- عنوان مناسب
+- ملخص قصير
+- أهم النقاط
+- أهم المعلومات التي يجب تذكرها
+- خلاصة نهائية
+
+اجعل الكلام واضحًا ومنظمًا وبدون تكرار.
 
 نص الفيديو:
 ${transcriptText}
 `;
     }
 
-    // Generate AI response
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: instruction,
+      model: "gemini-2.5-flash",
+      contents: prompt,
     });
 
     const result = response.text;
@@ -148,19 +139,16 @@ ${transcriptText}
       });
     }
 
-    // Send result to website
     return res.status(200).json({
       ok: true,
       result: result.trim(),
     });
   } catch (error) {
-    console.error("Analyze API Error:", error);
+    console.error("SnapGPT Error:", error);
 
     return res.status(500).json({
       ok: false,
-      error:
-        error?.message ||
-        "An unexpected error occurred while analyzing the video.",
+      error: error?.message || "Server error.",
     });
   }
 }
