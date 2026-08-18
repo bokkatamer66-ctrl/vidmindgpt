@@ -635,9 +635,81 @@ document.getElementById("summarize").addEventListener("click", async () => {
 </script>
 
   // Explain
-  document.getElementById("explain").addEventListener("click", () => {
-    analyzeVideo("explain");
-  });
+  <script>
+document.getElementById("explain").addEventListener("click", async function () {
+
+  const transcript =
+    document.getElementById("transcriptInput").value.trim();
+
+  const output =
+    document.getElementById("output");
+
+  const status =
+    document.getElementById("statusText");
+
+  const loader =
+    document.getElementById("loader");
+
+  if (!transcript) {
+    status.textContent = "Paste the transcript first.";
+    output.textContent =
+      "Please paste the transcript so SnapGPT can explain it.";
+    return;
+  }
+
+  status.textContent = "SnapGPT is explaining...";
+  output.textContent =
+    "Generating Arabic + English explanation...";
+
+  loader.classList.add("active");
+
+  try {
+
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        transcript: transcript,
+        mode: "explain"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(
+        data.error || "AI request failed."
+      );
+    }
+
+    output.textContent = data.result;
+
+    status.textContent =
+      "Explanation completed successfully!";
+
+  } catch (error) {
+
+    console.error(error);
+
+    output.textContent =
+      "Something went wrong.\n\n" +
+      error.message;
+
+    status.textContent =
+      "AI connection failed.";
+
+  } finally {
+
+    loader.classList.remove("active");
+
+  }
+
+});
+</script>
 
   // Upload
   document.getElementById("upload").addEventListener("click", () => {
