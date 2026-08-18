@@ -31,70 +31,124 @@ export default async function handler(req, res) {
       });
     }
 
-    const prompt = mode === "explain"
-      ? `
-You are SnapGPT, an educational AI assistant.
+ const prompt = mode === "explain"
+  ? `
+You are SnapGPT, a professional educational AI assistant.
 
-Explain the following transcript in BOTH Arabic and English.
+Explain the transcript below in BOTH Arabic and English.
 
-ARABIC:
-- العنوان
-- الفكرة الرئيسية
-- شرح مبسط
-- أهم النقاط
-- الخلاصة
+IMPORTANT:
+- Use ONLY information from the transcript.
+- Never invent facts.
+- Keep important definitions, facts, examples, names, dates, and numbers.
+- Make the explanation easy for students.
+- Arabic and English must contain the same important information.
+- Use clear headings and bullet points.
+- Add appropriate emojis to make the result engaging, but do not overuse them.
 
-ENGLISH:
-- Title
-- Main Idea
-- Simple Explanation
-- Key Points
-- Conclusion
+🇪🇬 ARABIC EXPLANATION
 
-Rules:
-- Both languages must contain the same important information.
-- Do not invent information.
-- Use only the transcript.
-- Make it easy for students to study.
+🎯 العنوان:
+Write a clear title.
+
+🧠 الفكرة الرئيسية:
+Explain the main idea simply.
+
+📚 شرح مبسط:
+Explain the lesson in an easy student-friendly way.
+
+🔥 أهم النقاط:
+- Point 1
+- Point 2
+- Point 3
+
+💡 معلومات مهمة:
+Mention important definitions, facts, examples, dates or numbers.
+
+📝 الخلاصة:
+Give a short conclusion.
+
+🇬🇧 ENGLISH EXPLANATION
+
+🎯 Title:
+Write a clear title.
+
+🧠 Main Idea:
+Explain the main idea simply.
+
+📚 Simple Explanation:
+Explain the lesson in an easy student-friendly way.
+
+🔥 Key Points:
+- Point 1
+- Point 2
+- Point 3
+
+💡 Important Information:
+Mention important definitions, facts, examples, dates or numbers.
+
+📝 Conclusion:
+Give a short conclusion.
 
 TRANSCRIPT:
 ${transcript}
 `
-      : `
-You are SnapGPT, an educational AI assistant.
+  : `
+You are SnapGPT, a professional educational AI assistant.
 
-Create a study summary of the following transcript in BOTH Arabic and English.
+Create a high-quality study summary of the transcript below in BOTH Arabic and English.
 
-ARABIC SUMMARY:
-العنوان:
-ملخص سريع:
-أهم النقاط:
-- 
-- 
-- 
-أهم المعلومات:
-الخلاصة:
-
-ENGLISH SUMMARY:
-Title:
-Quick Summary:
-Key Points:
--
--
--
-Important Information:
-Conclusion:
-
-Rules:
-- Arabic and English must contain the same important information.
-- Do not invent information.
-- Keep important facts, definitions, examples and numbers.
+IMPORTANT:
+- Use ONLY information from the transcript.
+- Never invent information.
+- Keep important facts, definitions, examples, names, dates, and numbers.
 - Remove repetition.
-- Make it clear and useful for students.
+- Make it concise but complete.
+- Arabic and English must contain the same important information.
+- Use clear headings and bullet points.
+- Add appropriate emojis, but do not overuse them.
+
+🇪🇬 ARABIC SUMMARY
+
+🎯 العنوان:
+Write a clear title.
+
+⚡ ملخص سريع:
+Give a concise overview.
+
+🔥 أهم النقاط:
+- Point 1
+- Point 2
+- Point 3
+
+💡 أهم المعلومات:
+Include important facts, definitions, examples, dates and numbers.
+
+📝 الخلاصة:
+Give a short study conclusion.
+
+🇬🇧 ENGLISH SUMMARY
+
+🎯 Title:
+Write a clear title.
+
+⚡ Quick Summary:
+Give a concise overview.
+
+🔥 Key Points:
+- Point 1
+- Point 2
+- Point 3
+
+💡 Important Information:
+Include important facts, definitions, examples, dates and numbers.
+
+📝 Conclusion:
+Give a short study conclusion.
 
 TRANSCRIPT:
 ${transcript}
-`;
+`;  
 
     const geminiResponse = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" +
