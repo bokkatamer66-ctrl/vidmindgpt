@@ -1,287 +1,299 @@
 import TranscriptClient from "youtube-transcript-api";
 
 function getVideoId(url) {
-  try {
-    const parsed = new URL(url);
+    try {
+        const parsed = new URL(url);
 
-    const hostname = parsed.hostname
-      .toLowerCase()
-      .replace(/^www\./, "");
+        const host = parsed.hostname
+            .toLowerCase()
+            .replace(/^www\./, "");
 
-    // youtu.be/VIDEO_ID
-    if (hostname === "youtu.be") {
-      return parsed.pathname
-        .split("/")
-        .filter(Boolean)[0] || null;
+        if (host === "youtu.be") {
+            const id = parsed.pathname
+                .split("/")
+                .filter(Boolean)[0];
+
+            return /^[A-Za-z0-9_-]{11}$/.test(id)
+                ? id
+                : null;
+        }
+
+        if (
+            host === "youtube.com" ||
+            host === "m.youtube.com" ||
+            host === "music.youtube.com"
+        ) {
+            const watchId = parsed.searchParams.get("v");
+
+            if (
+                watchId &&
+                /^[A-Za-z0-9_-]{11}$/.test(watchId)
+            ) {
+                return watchId;
+            }
+
+            const match = parsed.pathname.match(
+                /^\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})/
+            );
+
+            return match ? match[1] : null;
+        }
+
+        return null;
+
+    } catch {
+        return null;
+    }
+}
+
+
+function errorText(error) {
+    if (!error) {
+        return "Unknown transcript error.";
     }
 
-    // youtube.com URLs
-    if (
-      hostname === "youtube.com" ||
-      hostname === "m.youtube.com" ||
-      hostname === "music.youtube.com"
-    ) {
-      // /watch?v=VIDEO_ID
-      const watchId = parsed.searchParams.get("v");
-
-      if (watchId) {
-        return watchId;
-      }
-
-      // /shorts/VIDEO_ID
-      const shortsMatch =
-        parsed.pathname.match(/^\/shorts\/([^/?]+)/);
-
-      if (shortsMatch) {
-        return shortsMatch[1];
-      }
-
-      // /embed/VIDEO_ID
-      const embedMatch =
-        parsed.pathname.match(/^\/embed\/([^/?]+)/);
-
-      if (embedMatch) {
-        return embedMatch[1];
-      }
-
-      // /live/VIDEO_ID
-      const liveMatch =
-        parsed.pathname.match(/^\/live\/([^/?]+)/);
-
-      if (liveMatch) {
-        return liveMatch[1];
-      }
+    if (typeof error === "string") {
+        return error;
     }
 
-    return null;
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
 
-  } catch (error) {
-    console.error("URL parsing error:", error);
-    return null;
-  }
+    if (typeof error === "object") {
+        if (typeof error.message === "string") {
+            return error.message;
+        }
+
+        if (typeof error.error === "string") {
+            return error.error;
+        }
+
+        try {
+            return JSON.stringify(error);
+        } catch {
+            return "Unknown transcript error.";
+        }
+    }
+
+    return String(error);
 }
 
 
 export default async function handler(req, res) {
 
-  // Only POST is allowed
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      ok: false,
-      error: "Method not allowed."
-    });
-  }
-
-
-  try {
-
-    /* --------------------------------------------------
-       Read request body
-    -------------------------------------------------- */
-
-    let body = req.body;
-
-    if (typeof body === "string") {
-      try {
-        body = JSON.parse(body);
-      } catch {
-        return res.status(400).json({
-          ok: false,
-          error: "Invalid request body."
+    if (req.method !== "POST") {
+        return res.status(405).json({
+            ok: false,
+            error: "Method not allowed."
         });
-      }
     }
 
 
-    const url = body?.url;
+    try {
+
+        let body = req.body;
+
+        if (typeof body === "string") {
+            try {
+                body = JSON.parse(body);
+            } catch {
+                return res.status(400).json({
+                    ok: false,
+                    error: "Invalid request body."
+                });
+            }
+        }
 
 
-    if (
-      !url ||
-      typeof url !== "string"
-    ) {
-      return res.status(400).json({
-        ok: false,
-        error: "YouTube URL is required."
-      });
+        const url =
+            typeof body?.url === "string"
+                ? body.url.trim()
+                : "";
+
+
+        if (!url) {
+            return res.status(400).json({
+                ok: false,
+                error: "YouTube URL is required."
+            });
+        }
+
+
+        const videoId = getVideoId(url);
+
+
+        if (!videoId) {
+            return res.status(400).json({
+                ok: false,
+                error: "Invalid YouTube URL."
+            });
+        }
+
+
+        console.log(
+            "SnapGPT: Starting transcript request:",
+            videoId
+        );
+
+
+        /*
+         * Create the client.
+         *
+         * youtube-transcript-api 3.x requires
+         * waiting for client.ready before calling
+         * getTranscript().
+         */
+
+        const client = new TranscriptClient();
+
+        await client.ready;
+
+
+        console.log(
+            "SnapGPT: Transcript client ready."
+        );
+
+
+        const data =
+            await client.getTranscript(videoId);
+
+
+        console.log(
+            "SnapGPT: YouTube response received."
+        );
+
+
+        if (!data) {
+            return res.status(404).json({
+                ok: false,
+                error: "YouTube returned no transcript data."
+            });
+        }
+
+
+        /*
+         * The package returns an object containing
+         * a tracks array.
+         */
+
+        const tracks =
+            Array.isArray(data.tracks)
+                ? data.tracks
+                : [];
+
+
+        if (tracks.length === 0) {
+
+            const reason =
+                data.playabilityStatus?.reason;
+
+            return res.status(404).json({
+                ok: false,
+                error:
+                    reason ||
+                    "This video does not have an available transcript."
+            });
+        }
+
+
+        /*
+         * Find the first usable transcript track.
+         */
+
+        const track =
+            tracks.find(
+                item =>
+                    Array.isArray(item?.transcript) &&
+                    item.transcript.length > 0
+            );
+
+
+        if (!track) {
+            return res.status(404).json({
+                ok: false,
+                error:
+                    "No usable transcript was found for this video."
+            });
+        }
+
+
+        /*
+         * Convert transcript segments to plain text.
+         */
+
+        const transcript =
+            track.transcript
+                .map(segment => {
+
+                    if (
+                        typeof segment?.text === "string"
+                    ) {
+                        return segment.text;
+                    }
+
+                    if (
+                        typeof segment === "string"
+                    ) {
+                        return segment;
+                    }
+
+                    return "";
+
+                })
+                .filter(Boolean)
+                .join(" ")
+                .replace(/\s+/g, " ")
+                .trim();
+
+
+        if (!transcript) {
+            return res.status(404).json({
+                ok: false,
+                error:
+                    "The transcript was returned empty."
+            });
+        }
+
+
+        if (transcript.length < 20) {
+            return res.status(404).json({
+                ok: false,
+                error:
+                    "The transcript is too short to analyze."
+            });
+        }
+
+
+        console.log(
+            "SnapGPT: Transcript retrieved successfully.",
+            transcript.length,
+            "characters"
+        );
+
+
+        return res.status(200).json({
+            ok: true,
+            videoId,
+            transcript
+        });
+
+
+    } catch (error) {
+
+        const message =
+            errorText(error);
+
+
+        console.error(
+            "SnapGPT Transcript Error:",
+            error
+        );
+
+
+        return res.status(500).json({
+            ok: false,
+            error: message
+        });
     }
-
-
-    /* --------------------------------------------------
-       Extract YouTube video ID
-    -------------------------------------------------- */
-
-    const videoId = getVideoId(url);
-
-
-    if (!videoId) {
-      return res.status(400).json({
-        ok: false,
-        error: "Invalid YouTube URL."
-      });
-    }
-
-
-    console.log(
-      "SnapGPT: Getting transcript for:",
-      videoId
-    );
-
-
-    /* --------------------------------------------------
-       Create transcript client
-    -------------------------------------------------- */
-
-    const client = new TranscriptClient();
-
-    await client.ready;
-
-
-    /* --------------------------------------------------
-       Get transcript
-    -------------------------------------------------- */
-
-    const data =
-      await client.getTranscript(videoId);
-
-
-    console.log(
-      "SnapGPT: Transcript API response received."
-    );
-
-
-    /* --------------------------------------------------
-       Validate response
-    -------------------------------------------------- */
-
-    if (!data) {
-      return res.status(404).json({
-        ok: false,
-        error:
-          "YouTube did not return transcript data."
-      });
-    }
-
-
-    if (
-      !Array.isArray(data.tracks) ||
-      data.tracks.length === 0
-    ) {
-
-      return res.status(404).json({
-        ok: false,
-        error:
-          "This video does not have an available transcript."
-      });
-    }
-
-
-    /* --------------------------------------------------
-       Select first usable track
-    -------------------------------------------------- */
-
-    const track =
-      data.tracks.find(
-        item =>
-          Array.isArray(item?.transcript) &&
-          item.transcript.length > 0
-      );
-
-
-    if (!track) {
-      return res.status(404).json({
-        ok: false,
-        error:
-          "No usable transcript was found for this video."
-      });
-    }
-
-
-    /* --------------------------------------------------
-       Build transcript text
-    -------------------------------------------------- */
-
-    const transcript =
-      track.transcript
-        .map(segment => {
-
-          if (
-            typeof segment === "string"
-          ) {
-            return segment;
-          }
-
-          return (
-            segment?.text ||
-            segment?.snippet ||
-            ""
-          );
-
-        })
-        .filter(Boolean)
-        .join(" ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-
-    /* --------------------------------------------------
-       Validate transcript
-    -------------------------------------------------- */
-
-    if (!transcript) {
-      return res.status(404).json({
-        ok: false,
-        error:
-          "The transcript was returned empty."
-      });
-    }
-
-
-    if (transcript.length < 20) {
-      return res.status(404).json({
-        ok: false,
-        error:
-          "The transcript is too short to summarize."
-      });
-    }
-
-
-    /* --------------------------------------------------
-       Success
-    -------------------------------------------------- */
-
-    console.log(
-      "SnapGPT: Transcript retrieved successfully."
-    );
-
-
-    return res.status(200).json({
-      ok: true,
-      videoId,
-      transcript
-    });
-
-
-  } catch (error) {
-
-    console.error(
-      "SnapGPT Transcript Error:",
-      error
-    );
-
-
-    /* --------------------------------------------------
-       Return useful error instead of hiding it
-    -------------------------------------------------- */
-
-    const message =
-      error?.message ||
-      "Could not retrieve the video transcript.";
-
-
-    return res.status(500).json({
-      ok: false,
-      error: message
-    });
-  }
 }
