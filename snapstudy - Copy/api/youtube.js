@@ -1,33 +1,39 @@
+```javascript
 import TranscriptClient from "youtube-transcript-api";
+
 export default async function handler(req, res) {
+
   if (req.method !== "POST") {
     return res.status(405).json({
       ok: false,
-      error: "Method not allowed"
+      error: "Method Not Allowed"
     });
   }
 
   try {
-    const body = req.body || {};
-const url = typeof body.url === "string"
-  ? body.url.trim()
-  : "";
 
-if (!url) {
+    const body = req.body || {};
+
+    const url =
+      typeof body.url === "string"
+        ? body.url.trim()
+        : "";
+
+    if (!url) {
       return res.status(400).json({
         ok: false,
-        error: "YouTube URL is required"
+        error: "YouTube URL is required."
       });
     }
 
     const match = url.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/
     );
 
     if (!match) {
       return res.status(400).json({
         ok: false,
-        error: "Invalid YouTube URL"
+        error: "Invalid YouTube URL."
       });
     }
 
@@ -36,17 +42,66 @@ if (!url) {
     const client = new TranscriptClient();
 
     await client.ready;
-const transcript = await client.getTranscript(videoId);
 
-const text = transcript
-  .map(item => item.text)
-  .join(" ");
+    const data =
+      await client.getTranscript(videoId);
 
-    if (!text.trim()) {
+    /*
+      youtube-transcript-api 3.x returns
+      a transcript object.
+
+      The actual transcript lines are inside
+      the tracks array.
+    */
+
+    let lines = [];
+
+    if (Array.isArray(data)) {
+      lines = data;
+    } else if (Array.isArray(data?.transcript)) {
+      lines = data.transcript;
+    } else if (Array.isArray(data?.tracks)) {
+
+      for (const track of data.tracks) {
+
+        if (Array.isArray(track?.transcript)) {
+          lines.push(...track.transcript);
+        }
+
+        if (Array.isArray(track?.events)) {
+          lines.push(...track.events);
+        }
+
+      }
+
+    }
+
+    const text = lines
+      .map(item => {
+
+        if (typeof item === "string") {
+          return item;
+        }
+
+        return (
+          item?.text ||
+          item?.snippet?.text ||
+          ""
+        );
+
+      })
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!text) {
+
       return res.status(404).json({
         ok: false,
-        error: "No transcript found for this video"
+        error:
+          "No transcript is available for this YouTube video."
       });
+
     }
 
     return res.status(200).json({
@@ -55,11 +110,20 @@ const text = transcript
     });
 
   } catch (error) {
-    console.error("YouTube transcript error:", error);
+
+    console.error(
+      "SnapGPT YouTube transcript error:",
+      error
+    );
 
     return res.status(500).json({
       ok: false,
-      error: "Could not retrieve the YouTube transcript."
+      error:
+        error?.message ||
+        "Could not retrieve the YouTube transcript."
     });
+
   }
+
 }
+```
