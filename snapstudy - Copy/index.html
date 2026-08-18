@@ -701,7 +701,7 @@ document.getElementById("summarize").addEventListener("click", async () => {
       );
     }
 
-    output.textContent = data.result;
+    output.innerHTML = formatSnapGPTResult(data.result);
 
     status.textContent =
       "Summary completed successfully!";
