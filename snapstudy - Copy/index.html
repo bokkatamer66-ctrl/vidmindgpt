@@ -1,9 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>SnapGPT — AI Video Intelligence</title>
 
   <style>
@@ -15,6 +15,7 @@
       --white: #f7fbff;
       --muted: #8d9aaa;
       --border: rgba(57, 231, 255, .16);
+      --danger: #ff6b81;
     }
 
     * {
@@ -26,11 +27,30 @@
     body {
       min-height: 100vh;
       font-family: Arial, sans-serif;
+
       background:
-        radial-gradient(circle at 20% 10%, rgba(57,231,255,.08), transparent 30%),
-        radial-gradient(circle at 80% 80%, rgba(167,139,250,.08), transparent 30%),
+        radial-gradient(
+          circle at 20% 10%,
+          rgba(57,231,255,.08),
+          transparent 30%
+        ),
+        radial-gradient(
+          circle at 80% 80%,
+          rgba(167,139,250,.08),
+          transparent 30%
+        ),
         var(--black);
+
       color: var(--white);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
     }
 
     .app {
@@ -117,6 +137,18 @@
       color: #031014;
       font-weight: 800;
       cursor: pointer;
+      transition: .2s;
+    }
+
+    #start:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    #start:disabled {
+      opacity: .65;
+      cursor: wait;
+      transform: none;
     }
 
     .actions {
@@ -142,6 +174,12 @@
       border-color: rgba(57,231,255,.5);
     }
 
+    .action:disabled {
+      opacity: .55;
+      cursor: wait;
+      transform: none;
+    }
+
     #explain {
       border-color: rgba(167,139,250,.3);
       background: rgba(167,139,250,.08);
@@ -152,6 +190,7 @@
       margin: 22px 0;
       color: var(--muted);
       font-size: 13px;
+      min-height: 20px;
     }
 
     .loader {
@@ -182,7 +221,7 @@
     }
 
     @keyframes bounce {
-      0%,80%,100% {
+      0%, 80%, 100% {
         transform: scale(.5);
         opacity: .4;
       }
@@ -214,6 +253,7 @@
       line-height: 1.8;
       white-space: pre-wrap;
       font-size: 15px;
+      overflow-wrap: anywhere;
     }
 
     .result-tools {
@@ -229,6 +269,11 @@
       border-radius: 10px;
       padding: 8px 14px;
       cursor: pointer;
+      transition: .2s;
+    }
+
+    .result-tool:hover {
+      border-color: rgba(57,231,255,.5);
     }
 
     .features {
@@ -263,6 +308,7 @@
     }
 
     @media (max-width: 700px) {
+
       .url-box {
         flex-direction: column;
       }
@@ -275,386 +321,219 @@
       .features {
         grid-template-columns: 1fr;
       }
+
+      .workspace {
+        padding: 18px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<main class="app">
+  <main class="app">
 
-  <header>
-    <div class="logo">● SNAPGPT</div>
+    <header>
 
-    <h1>
-      Study Less.<br>
-      <span>Understand More.</span>
-    </h1>
+      <div class="logo">
+        ● SNAPGPT
+      </div>
 
-    <p class="subtitle">
-      Paste a YouTube video and let SnapGPT turn it into
-      clear summaries and intelligent explanations.
-    </p>
-  </header>
+      <h1>
+        Study Less.<br>
+        <span>Understand More.</span>
+      </h1>
 
-  <section class="workspace">
+      <p class="subtitle">
+        Paste a YouTube video and let SnapGPT turn it into
+        clear summaries and intelligent explanations.
+      </p>
 
-    <label class="input-label">
-      YOUTUBE VIDEO
-    </label>
+    </header>
 
-    <div class="url-box">
 
-      <input
-        id="youtubeUrl"
-        type="url"
-        placeholder="Paste YouTube link here..."
-        autocomplete="off"
+    <section class="workspace">
+
+      <label
+        class="input-label"
+        for="youtubeUrl"
+      >
+        YOUTUBE VIDEO
+      </label>
+
+
+      <div class="url-box">
+
+        <input
+          id="youtubeUrl"
+          type="url"
+          placeholder="Paste YouTube link here..."
+          autocomplete="off"
+          spellcheck="false"
+        >
+
+
+        <button
+          id="start"
+          type="button"
+        >
+          Let's Go
+        </button>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="action"
+          id="upload"
+          type="button"
+        >
+          📤 Upload
+        </button>
+
+
+        <button
+          class="action"
+          id="summarize"
+          type="button"
+        >
+          ✦ Summarize
+        </button>
+
+
+        <button
+          class="action"
+          id="explain"
+          type="button"
+        >
+          ◈ Explain
+        </button>
+
+      </div>
+
+
+      <div class="status">
+
+        <span id="statusText">
+          Ready for your video.
+        </span>
+
+      </div>
+
+
+      <div
+        class="loader"
+        id="loader"
+        aria-label="Loading"
       >
 
-      <button id="start" type="button">
-        Let's Go
-      </button>
-
-    </div>
-
-    <div class="actions">
-
-      <button class="action" id="upload" type="button">
-        📤 Upload
-      </button>
-
-      <button class="action" id="summarize" type="button">
-        ✦ Summarize
-      </button>
-
-      <button class="action" id="explain" type="button">
-        ◈ Explain
-      </button>
-
-    </div>
-
-    <div class="status">
-      <span id="statusText">
-        Ready for your video.
-      </span>
-    </div>
-
-    <div class="loader" id="loader">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-
-    <div class="result">
-
-      <div class="result-tools">
-
-        <button id="copyResult" class="result-tool">
-          📋 Copy
-        </button>
-
-        <button id="clearResult" class="result-tool">
-          🗑️ Clear
-        </button>
+        <span></span>
+        <span></span>
+        <span></span>
 
       </div>
 
-      <div class="result-title">
-        SNAPGPT RESULT
+
+      <div
+        class="result"
+        id="resultArea"
+      >
+
+        <div class="result-tools">
+
+          <button
+            id="copyResult"
+            class="result-tool copy-btn"
+            type="button"
+          >
+            📋 Copy
+          </button>
+
+
+          <button
+            id="clearResult"
+            class="result-tool"
+            type="button"
+          >
+            🗑️ Clear
+          </button>
+
+        </div>
+
+
+        <div class="result-title">
+          SNAPGPT RESULT
+        </div>
+
+
+        <div id="output">
+          Your AI-generated result will appear here.
+        </div>
+
       </div>
 
-      <div id="output">
-        Your AI-generated result will appear here.
-      </div>
+    </section>
 
-    </div>
-
-  </section>
-
-  <section class="features">
-
-    <article class="feature">
-      <h3>⚡ Fast Analysis</h3>
-      <p>
-        Turn long educational videos into useful information.
-      </p>
-    </article>
-
-    <article class="feature">
-      <h3>🧠 Deep Understanding</h3>
-      <p>
-        Extract the important ideas and organize them clearly.
-      </p>
-    </article>
-
-    <article class="feature">
-      <h3>✨ Clean Results</h3>
-      <p>
-        Get summaries and explanations that are easy to study.
-      </p>
-    </article>
 
-  </section>
+    <section class="features">
 
-  <footer>
-    SnapGPT · AI Video Intelligence
-  </footer>
+      <article class="feature">
 
-</main>
+        <h3>
+          ⚡ Fast Analysis
+        </h3>
 
-<script>
+        <p>
+          Turn long educational videos into useful information.
+        </p>
 
-const youtubeUrl = document.getElementById("youtubeUrl");
-const output = document.getElementById("output");
-const statusText = document.getElementById("statusText");
-const loader = document.getElementById("loader");
+      </article>
 
-function showLoading(message) {
-  statusText.textContent = message;
-  loader.classList.add("active");
-}
 
-function hideLoading() {
-  loader.classList.remove("active");
-}
+      <article class="feature">
 
-function getYouTubeUrl() {
+        <h3>
+          🧠 Deep Understanding
+        </h3>
 
-  const url = youtubeUrl.value.trim();
+        <p>
+          Extract the important ideas and organize them clearly.
+        </p>
 
-  if (!url) {
-    throw new Error("Please paste a YouTube link first.");
-  }
+      </article>
 
-  const pattern =
-    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)[A-Za-z0-9_-]{11}/;
 
-  if (!pattern.test(url)) {
-    throw new Error("Please enter a valid YouTube link.");
-  }
+      <article class="feature">
 
-  return url;
-}
-async function requestTranscript(url) {
+        <h3>
+          ✨ Clean Results
+        </h3>
 
-    const response = await fetch("/api/transcript", {
-        method: "POST",
+        <p>
+          Get summaries and explanations that are easy to study.
+        </p>
 
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
+      </article>
 
-        body: JSON.stringify({
-            url: url
-        })
-    });
+    </section>
 
-    const data = await response.json().catch(() => null);
 
-    if (!response.ok || !data || !data.ok) {
-        throw new Error(
-            data?.error ||
-            data?.message ||
-            `Transcript API failed (${response.status}).`
-        );
-    }
+    <footer>
+      SnapGPT · AI Video Intelligence
+    </footer>
 
-    const transcript =
-        data.transcript ||
-        data.text ||
-        data.data?.transcript ||
-        data.data?.text;
+  </main>
 
-    if (
-        typeof transcript !== "string" ||
-        !transcript.trim()
-    ) {
-        throw new Error(
-            "No transcript was found for this video."
-        );
-    }
 
-    return transcript.trim();
-}
+  <!--
+    IMPORTANT:
+    All application JavaScript is handled by script.js.
+    Do NOT put another <script> block here.
+  -->
 
-  if (!data.transcript) {
-    throw new Error("The video does not have an available transcript.");
-  }
-
-  return data.transcript;
-}
-
-async function analyzeTranscript(transcript, mode) {
-
-  const response = await fetch("/api/analyze", {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-      transcript: transcript,
-      mode: mode
-    })
-
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok || !data || !data.ok) {
-
-    throw new Error(
-      data?.error ||
-      "AI request failed."
-    );
-
-  }
-
-  return data.result;
-}
-
-async function analyzeVideo(mode) {
-
-  try {
-
-    const url = getYouTubeUrl();
-
-    showLoading(
-      mode === "explain"
-        ? "Getting your video..."
-        : "Getting your video..."
-    );
-
-    output.textContent =
-      "Retrieving transcript...";
-
-    const transcript =
-      await requestTranscript(url);
-
-    statusText.textContent =
-      mode === "explain"
-        ? "SnapGPT is explaining..."
-        : "SnapGPT is summarizing...";
-
-    output.textContent =
-      "AI is analyzing the transcript...";
-
-    const result =
-      await analyzeTranscript(transcript, mode);
-
-    output.textContent = result;
-
-    statusText.textContent =
-      mode === "explain"
-        ? "Explanation completed successfully!"
-        : "Summary completed successfully!";
-
-  } catch (error) {
-
-    console.error("SnapGPT Error:", error);
-
-    output.textContent =
-      "⚠️ SnapGPT Error\n\n" +
-      error.message;
-
-    statusText.textContent =
-      "Something went wrong.";
-
-  } finally {
-
-    hideLoading();
-
-  }
-
-}
-
-document
-  .getElementById("start")
-  .addEventListener("click", () => {
-
-    analyzeVideo("summary");
-
-  });
-
-document
-  .getElementById("summarize")
-  .addEventListener("click", () => {
-
-    analyzeVideo("summary");
-
-  });
-
-document
-  .getElementById("explain")
-  .addEventListener("click", () => {
-
-    analyzeVideo("explain");
-
-  });
-
-document
-  .getElementById("upload")
-  .addEventListener("click", () => {
-
-    statusText.textContent =
-      "Upload mode is coming soon.";
-
-    output.textContent =
-      "📤 Upload mode is coming soon.";
-
-  });
-
-document
-  .getElementById("clearResult")
-  .addEventListener("click", () => {
-
-    youtubeUrl.value = "";
-
-    output.textContent =
-      "Your AI-generated result will appear here.";
-
-    statusText.textContent =
-      "Ready for your next lesson.";
-
-  });
-
-document
-  .getElementById("copyResult")
-  .addEventListener("click", async function () {
-
-    const text =
-      output.textContent.trim();
-
-    if (!text) return;
-
-    try {
-
-      await navigator.clipboard.writeText(text);
-
-      this.textContent = "✅ Copied!";
-
-      setTimeout(() => {
-        this.textContent = "📋 Copy";
-      }, 1500);
-
-    } catch {
-
-      this.textContent = "❌ Copy failed";
-
-      setTimeout(() => {
-        this.textContent = "📋 Copy";
-      }, 1500);
-
-    }
-
-  });
-
-</script>
+  <script src="./script.js"></script>
 
 </body>
 </html>
-```
