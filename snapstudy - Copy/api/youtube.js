@@ -8,9 +8,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { url } = req.body || {};
+    const body = req.body || {};
+const url = typeof body.url === "string"
+  ? body.url.trim()
+  : "";
 
-    if (!url) {
+if (!url) {
       return res.status(400).json({
         ok: false,
         error: "YouTube URL is required"
