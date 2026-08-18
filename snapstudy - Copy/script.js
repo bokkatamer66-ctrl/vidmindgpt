@@ -423,10 +423,10 @@ async function requestTranscript(url, videoId) {
         await readApiResponse(response);
 
 
-    console.log(
-        "SnapGPT Transcript API:",
-        data
-    );
+console.log(
+    "SnapGPT Transcript API:",
+    JSON.stringify(data, null, 2)
+);
 
 
     if (!response.ok) {
