@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@google/genai": "^2.13.0",
     "youtube-transcript-api": "^3.0.6"
   }
 }
