@@ -450,6 +450,26 @@
 </main>
 
 <script>
+ <script>
+document.getElementById("summarize").addEventListener("click", function () {
+
+  const transcript = document.getElementById("transcriptInput").value.trim();
+  const output = document.getElementById("output");
+  const status = document.getElementById("statusText");
+
+  if (!transcript) {
+    status.textContent = "Paste the transcript first.";
+    output.textContent = "No transcript was entered.";
+    return;
+  }
+
+  status.textContent = "Summarize button is working!";
+  output.textContent =
+    "Transcript received successfully!\n\n" +
+    transcript;
+
+});
+</script> 
   const youtubeUrl = document.getElementById("youtubeUrl");
   const output = document.getElementById("output");
   const statusText = document.getElementById("statusText");
