@@ -813,18 +813,34 @@ document.getElementById("summarize").addEventListener("click", async () => {
 
   try {
 
-    const response = await fetch("/api/analyze", {
-      method: "POST",
+   const transcriptResponse = await fetch("/api/youtube", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    url: url
+  })
+});
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+const transcriptData = await transcriptResponse.json();
 
-      body: JSON.stringify({
-        transcript: transcript,
-        mode: "summary"
-      })
-    });
+if (!transcriptResponse.ok || !transcriptData.ok) {
+  throw new Error(
+    transcriptData.error || "Could not get the video transcript."
+  );
+}
+
+const response = await fetch("/api/analyze", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    transcript: transcriptData.transcript,
+    mode: mode
+  })
+});
 
     const data = await response.json();
 
