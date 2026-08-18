@@ -772,6 +772,39 @@ document.getElementById("explain").addEventListener("click", async function () {
 
   });
 </script>
+<script>
+document.getElementById("clearResult").addEventListener("click", function () {
+  document.getElementById("transcriptInput").value = "";
 
+  document.getElementById("output").textContent =
+    "Your AI-generated result will appear here.";
+
+  document.getElementById("statusText").textContent =
+    "Ready for your next lesson.";
+});
+
+document.getElementById("copyResult").addEventListener("click", async function () {
+  const output = document.getElementById("output").textContent.trim();
+
+  if (!output) return;
+
+  try {
+    await navigator.clipboard.writeText(output);
+
+    this.textContent = "✅ Copied!";
+
+    setTimeout(() => {
+      this.textContent = "📋 Copy";
+    }, 1500);
+
+  } catch (error) {
+    this.textContent = "❌ Copy failed";
+
+    setTimeout(() => {
+      this.textContent = "📋 Copy";
+    }, 1500);
+  }
+});
+</script>
 </body>
 </html>
