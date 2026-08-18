@@ -145,9 +145,21 @@ export default async function handler(req, res) {
          * getTranscript().
          */
 
-        const client = new TranscriptClient();
+       const client = new TranscriptClient();
 
-        await client.ready;
+try {
+    await client.ready;
+} catch (error) {
+    console.error("SnapGPT CLIENT INIT ERROR:", error);
+
+    return res.status(500).json({
+        ok: false,
+        error:
+            error?.message ||
+            String(error) ||
+            "Transcript client initialization failed."
+    });
+}
 
 
         console.log(
