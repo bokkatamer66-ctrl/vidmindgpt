@@ -439,30 +439,37 @@ function getYouTubeUrl() {
 
 async function requestTranscript(url) {
 
-  const response = await fetch("/api/youtube", {
-
+ const response = await fetch("/api/transcript", {
     method: "POST",
-
     headers: {
-      "Content-Type": "application/json"
+        "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-      url: url
+        url: url
     })
+});
 
-  });
+const data = await response.json().catch(() => null);
 
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok || !data || !data.ok) {
-
+if (!response.ok || !data || !data.ok) {
     throw new Error(
-      data?.error ||
-      "Could not retrieve the video transcript."
+        data?.error ||
+        data?.message ||
+        "Could not retrieve the video transcript."
     );
+}
 
-  }
+const transcript =
+    data.transcript ||
+    data.text ||
+    data.data?.transcript ||
+    data.data?.text;
+
+if (!transcript) {
+    throw new Error(
+        "No transcript was found for this video."
+    );
+}
 
   if (!data.transcript) {
     throw new Error("The video does not have an available transcript.");
