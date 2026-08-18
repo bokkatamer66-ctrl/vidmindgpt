@@ -848,5 +848,32 @@ document.getElementById("copyResult").addEventListener("click", async function (
   }
 });
 </script>
+  <script>
+function formatSnapGPTResult(text) {
+  const safeText = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const sections = safeText.split(/\n\s*\n/);
+
+  let html = "";
+
+  sections.forEach((section, index) => {
+    if (!section.trim()) return;
+
+    html += `
+      <div class="result-section">
+        <div class="language-badge">
+          ${index === 0 ? "🇪🇬 Arabic" : "🇬🇧 English"}
+        </div>
+        <p>${section.replace(/\n/g, "<br>")}</p>
+      </div>
+    `;
+  });
+
+  return html;
+}
+</script>
 </body>
 </html>
