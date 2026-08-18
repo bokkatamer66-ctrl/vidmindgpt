@@ -855,25 +855,45 @@ function formatSnapGPTResult(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  const sections = safeText.split(/\n\s*\n/);
+  const arabicMatch = safeText.match(
+    /🇪🇬\s*ARABIC SUMMARY([\s\S]*?)(?=🇬🇧\s*ENGLISH SUMMARY|$)/i
+  );
+
+  const englishMatch = safeText.match(
+    /🇬🇧\s*ENGLISH SUMMARY([\s\S]*)/i
+  );
 
   let html = "";
 
-  sections.forEach((section, index) => {
-    if (!section.trim()) return;
-
+  if (arabicMatch) {
     html += `
       <div class="result-section">
         <div class="language-badge">
-          ${index === 0 ? "🇪🇬 Arabic" : "🇬🇧 English"}
+          🇪🇬 Arabic Summary
         </div>
-        <p>${section.replace(/\n/g, "<br>")}</p>
+        <p>${arabicMatch[1].trim().replace(/\n/g, "<br>")}</p>
       </div>
     `;
-  });
+  }
 
-  return html;
+  if (englishMatch) {
+    html += `
+      <div class="result-section">
+        <div class="language-badge">
+          🇬🇧 English Summary
+        </div>
+        <p>${englishMatch[1].trim().replace(/\n/g, "<br>")}</p>
+      </div>
+    `;
+  }
+
+  return html || `
+    <div class="result-section">
+      <p>${safeText.replace(/\n/g, "<br>")}</p>
+    </div>
+  `;
 }
+ 
 </script>
 </body>
 </html>
